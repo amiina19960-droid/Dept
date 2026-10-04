@@ -184,7 +184,7 @@ body,
 }
 
 .country-search:focus {
-  border-color: #35004d;
+  border-color: #000000;
 }
 
 .country-options {
@@ -333,7 +333,7 @@ body,
 
 .gender-option input:checked + .gender-radio {
   border: 0;
-  background: #3f0f58;
+  background: #000000;
 }
 
 .gender-option input:checked + .gender-radio::after {
@@ -384,7 +384,7 @@ body,
   height: clamp(24px, 2.96vw, 31px);
   flex-basis: clamp(24px, 2.96vw, 31px);
   border-radius: 8px;
-  border: 2px solid #3f0f58;
+  border: 2px solid #000000;
   background: #ffffff;
   box-sizing: border-box;
   overflow: hidden;
@@ -392,7 +392,7 @@ body,
 
 .terms-row input:checked + .terms-checkbox {
   border: 0;
-  background: #3f0f58;
+  background: #000000;
 }
 
 .terms-row input:checked + .terms-checkbox::after {
@@ -473,7 +473,7 @@ body,
   border: 0;
   border-radius: 50%;
   color: #ffffff;
-  background: #2d65b5;
+  background: #000000;
   font-size: 1.5rem;
   cursor: pointer;
 }
@@ -511,7 +511,7 @@ body,
   width: 44px;
   height: 44px;
   border: 4px solid #dddddd;
-  border-top-color: #216378;
+  border-top-color: #000000;
   border-radius: 50%;
   animation: register-spin 0.8s linear infinite;
 }
