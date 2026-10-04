@@ -1,34 +1,69 @@
-name: Build and deploy to GitHub Pages
+name: Build and deploy to gh-pages (by git)
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+
+permissions:
+  contents: write
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository (full history)
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
 
-      - name: Use Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
+          cache: "npm"
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       - name: Build
-        env:
-          # ensure Vite uses the correct base if you didn't set it in vite.config.js
-          # VITE_BASE: "/Stacks/"
         run: npm run build
 
-      - name: Deploy to gh-pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: ./dist
+      - name: Ensure SPA fallback (copy index.html -> 404.html)
+        run: |
+          if [ -f dist/index.html ]; then
+            cp -f dist/index.html dist/404.html
+            echo "Copied dist/index.html to dist/404.html"
+          else
+            echo "dist/index.html not found" && exit 1
+          fi
+
+      - name: Deploy to gh-pages branch (force)
+        env:
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git checkout --progress --force main
+
+          git branch -D gh-pages || true
+          git checkout --orphan gh-pages
+
+          git rm -rf . || true
+
+          cp -a dist/. .
+
+          git add --all
+          if git diff --cached --quiet; then
+            echo "No changes to deploy"
+          else
+            git commit -m "Deploy site to gh-pages (by GitHub Actions) [skip ci]"
+            git push -f "https://${GH_TOKEN}@github.com/${GH_REPO}.git" gh-pages
+          fi
+
+          git checkout -f main
