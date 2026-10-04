@@ -157,7 +157,7 @@ function shuffle(array) {
 }
 
 function makeLocalProductList(start = 100, end = 200) {
-  const base = "/assets/images/products/";
+  const base = "/Dept/assets/images/products/";
   const list = [];
   for (let i = start; i <= end; i++) {
     list.push(`${base}product1(${i}).png`);
