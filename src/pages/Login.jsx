@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import CustomerServiceModal from "../components/CustomerServiceModal";
+import logo from "../assets/images/header/logo.svg";
 import "./Login.css";
 import { useProfile } from "../context/profileContext";
 
@@ -160,22 +161,8 @@ export default function Login({ refreshRecords }) {
       {showSpinner && <SpinnerOverlay />}
 
       <main className="login-container">
-        <div className="instrument-logo" aria-label="Instrument">
-          <div className="instrument-symbol">
-            <span />
-            <span />
-            <span />
-            <span />
-            <span />
-            <span />
-            <span />
-            <span />
-            <span />
-            <span />
-            <span />
-          </div>
-
-          <div className="instrument-wordmark">INSTRUMENT</div>
+        <div className="login-logo-wrapper">
+          <img src={logo} alt="DEPT" className="login-logo" />
         </div>
 
         <h1 className="login-welcome">WELCOME TO</h1>
