@@ -394,8 +394,8 @@ const styles = `
   .dashboard-footer {
     width: 100%;
     min-height: clamp(110px, 18vw, 220px);
-    padding: clamp(24px, 4vw, 42px) 0 clamp(80px, 10vw, 120px);
-    background: #ffffff;
+    padding: clamp(24px, 4vw, 42px) 0 clamp(40px, 5vw, 60px);
+    background: transparent;
   }
 
   .dashboard-footer-divider {
@@ -719,7 +719,7 @@ const styles = `
 
     .dashboard-footer {
       min-height: 90px;
-      padding: 20px 0 90px;
+      padding: 20px 0 44px;
     }
 
     .dashboard-footer-divider {
