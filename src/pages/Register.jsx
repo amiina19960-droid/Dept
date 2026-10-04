@@ -1,653 +1,477 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import {
+  getCountries,
+  getCountryCallingCode,
+} from "libphonenumber-js";
 import logo from "../assets/images/header/logo.svg";
-import LanguageSwitcher from "../components/LanguageSwitcher";
-import "./Register.css";
-// customer service modal
 import CustomerServiceModal from "../components/CustomerServiceModal";
-// import TermsAndConditions page (requested)
-import TermsAndConditions from "./TermsAndConditions";
+import "./Register.css";
 
-// Reusable grey fading message overlay (universal)
-function GreyFadeMessage({ message, duration = 1000, onDone }) {
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      if (onDone) onDone();
-    }, duration);
-    return () => clearTimeout(timer);
-  }, [duration, onDone]);
-  return (
-    <div
-      style={{
-        position: "fixed",
-        zIndex: 20000,
-        top: 0,
-        left: 0,
-        width: "100vw",
-        height: "100vh",
-        background: "rgba(245,247,251,0.95)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        pointerEvents: "none",
-      }}
-    >
-      <div
-        style={{
-          background: "#e6e6e6",
-          color: "#222",
-          borderRadius: "18px",
-          padding: "1.2rem 2.5rem",
-          fontWeight: 700,
-          opacity: 0.96,
-          fontSize: "1.18rem",
-          boxShadow: "0 2px 16px 0 #0002",
-          textAlign: "center",
-          minWidth: "180px",
-          letterSpacing: "0.01em",
-          animation: "fade-in-out-register 1s linear",
-        }}
-      >
-        {message}
-      </div>
-      <style>{`@keyframes fade-in-out-register { 0% { opacity: 0; transform: scale(0.98); } 10% { opacity: 1; transform: scale(1); } 90% { opacity: 1; } 100% { opacity: 0; } }`}</style>
-    </div>
-  );
-}
-
-// Simple spinner overlay for loading
-function SpinnerOverlay({ duration = 500, onDone }) {
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      if (onDone) onDone();
-    }, duration);
-    return () => clearTimeout(timer);
-  }, [onDone, duration]);
-  return (
-    <div
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100vw",
-        height: "100vh",
-        zIndex: 20000,
-        background: "rgba(245,247,251,0.90)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        pointerEvents: "none",
-      }}
-    >
-      <div
-        className="spinner"
-        style={{
-          width: 44,
-          height: 44,
-          border: "4px solid #ddd",
-          borderTop: "4px solid #216378",
-          borderRadius: "50%",
-          animation: "spin-register 0.8s linear infinite",
-        }}
-      />
-      <style>{`@keyframes spin-register { 100% { transform: rotate(360deg); } }`}</style>
-    </div>
-  );
-}
-
-// ---- Updated: Use your custom API domain ----
 const API_URL = "https://stacks-admin.onrender.com";
 
-// Highlight color to match Male/Female (kept consistent)
-const HIGHLIGHT_COLOR = "#1fb6fc";
+const countryNames = new Intl.DisplayNames(["en"], {
+  type: "region",
+});
+
+const getFlag = (countryCode) =>
+  countryCode
+    .toUpperCase()
+    .replace(/./g, (character) =>
+      String.fromCodePoint(127397 + character.charCodeAt(0))
+    );
+
+function getCountryName(countryCode) {
+  try {
+    return countryNames.of(countryCode) || countryCode;
+  } catch {
+    return countryCode;
+  }
+}
+
+function EyeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M1.7 12s3.4-7 10.3-7 10.3 7 10.3 7-3.4 7-10.3 7S1.7 12 1.7 12Z" />
+      <circle cx="12" cy="12" r="3.1" />
+    </svg>
+  );
+}
+
+function FadeMessage({ message }) {
+  return (
+    <div className="register-message-overlay">
+      <div className="register-message">{message}</div>
+    </div>
+  );
+}
+
+function SpinnerOverlay() {
+  return (
+    <div className="register-spinner-overlay">
+      <div className="register-spinner" />
+    </div>
+  );
+}
 
 export default function Register() {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     username: "",
+    email: "",
     phone: "",
-    loginPassword: "",
     withdrawalPassword: "",
     password: "",
     confirmPassword: "",
-    gender: "",
+    gender: "Male",
     inviteCode: "",
-    agreed: false,
+    agreed: true,
   });
 
-  const [fadeMsg, setFadeMsg] = useState(""); // grey fading message
-  const [showSpinner, setShowSpinner] = useState(false); // loading spinner
-
-  // customer service modal state
+  const [selectedCountry, setSelectedCountry] = useState("UG");
+  const [countrySearch, setCountrySearch] = useState("");
+  const [countryMenuOpen, setCountryMenuOpen] = useState(false);
+  const [fadeMsg, setFadeMsg] = useState("");
+  const [showSpinner, setShowSpinner] = useState(false);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
 
-  // NEW: Terms modal state
-  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showPassword, setShowPassword] = useState({
+    withdrawalPassword: false,
+    password: false,
+    confirmPassword: false,
+  });
 
-  // focus management for modal accessibility
-  const previouslyFocusedRef = useRef(null);
-  const modalRef = useRef(null);
-  const modalCloseBtnRef = useRef(null);
+  const countries = useMemo(() => {
+    return getCountries()
+      .map((code) => ({
+        code,
+        name: getCountryName(code),
+        flag: getFlag(code),
+        dialCode: `+${getCountryCallingCode(code)}`,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, []);
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
+  const visibleCountries = useMemo(() => {
+    const search = countrySearch.trim().toLowerCase();
+
+    if (!search) return countries;
+
+    return countries.filter(
+      (country) =>
+        country.name.toLowerCase().includes(search) ||
+        country.code.toLowerCase().includes(search) ||
+        country.dialCode.includes(search)
+    );
+  }, [countries, countrySearch]);
+
+  const currentCountry =
+    countries.find((country) => country.code === selectedCountry) ||
+    countries.find((country) => country.code === "UG") ||
+    countries[0];
+
+  const handleChange = (event) => {
+    const { name, value, type, checked } = event.target;
+
+    setFormData((previous) => ({
+      ...previous,
       [name]: type === "checkbox" ? checked : value,
     }));
   };
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
+  const togglePassword = (field) => {
+    setShowPassword((previous) => ({
+      ...previous,
+      [field]: !previous[field],
+    }));
+  };
+
+  const chooseCountry = (country) => {
+    setSelectedCountry(country.code);
+    setCountryMenuOpen(false);
+    setCountrySearch("");
+  };
+
+  const handleRegister = async (event) => {
+    event.preventDefault();
+
     if (!formData.agreed) {
       setFadeMsg("Please agree to the Terms and Conditions.");
       return;
     }
+
     if (formData.password !== formData.confirmPassword) {
       setFadeMsg("Passwords do not match.");
       return;
     }
+
     try {
-      const res = await fetch(`${API_URL}/api/users/register`, {
+      const response = await fetch(`${API_URL}/api/users/register`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           username: formData.username,
+          email: formData.email,
           phone: formData.phone,
+          country: currentCountry.code,
+          dialCode: currentCountry.dialCode,
           loginPassword: formData.password,
           withdrawalPassword: formData.withdrawalPassword,
           gender: formData.gender,
           inviteCode: formData.inviteCode,
         }),
       });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        // Save user info to localStorage (like login does), then redirect
-        localStorage.setItem("currentUser", JSON.stringify(data.user));
-        localStorage.setItem("user", data.user.username);
-        localStorage.setItem("authToken", data.user.token);
 
-        // Grey fading success, then spinner, then redirect (no message about redirecting)
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        if (data.user) {
+          localStorage.setItem("currentUser", JSON.stringify(data.user));
+          localStorage.setItem("user", data.user.username || "");
+
+          if (data.user.token) {
+            localStorage.setItem("authToken", data.user.token);
+          }
+        }
+
         setFadeMsg("Register Success");
       } else {
         setFadeMsg(data.message || "Registration failed.");
       }
-    } catch (err) {
+    } catch (error) {
+      console.error("Registration failed:", error);
       setFadeMsg("Server error. Please try again later.");
     }
   };
 
-  // FadeMsg transitions to spinner if success, then navigate
   useEffect(() => {
-    if (fadeMsg === "Register Success") {
-      // after 1s, show spinner
-      const timer = setTimeout(() => {
+    if (!fadeMsg) return undefined;
+
+    const timer = setTimeout(() => {
+      if (fadeMsg === "Register Success") {
         setFadeMsg("");
         setShowSpinner(true);
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-    if (fadeMsg && fadeMsg !== "Register Success") {
-      // for other error/info messages, just hide after 1s
-      const timer = setTimeout(() => setFadeMsg(""), 1000);
-      return () => clearTimeout(timer);
-    }
+      } else {
+        setFadeMsg("");
+      }
+    }, 1000);
+
+    return () => clearTimeout(timer);
   }, [fadeMsg]);
 
-  // When spinner is shown (after success), go to dashboard after 0.5s
   useEffect(() => {
-    if (showSpinner) {
-      const timer = setTimeout(() => {
-        setShowSpinner(false);
-        navigate("/dashboard");
-      }, 500);
-      return () => clearTimeout(timer);
-    }
+    if (!showSpinner) return undefined;
+
+    const timer = setTimeout(() => {
+      setShowSpinner(false);
+      navigate("/dashboard");
+    }, 500);
+
+    return () => clearTimeout(timer);
   }, [showSpinner, navigate]);
 
-  // NEW: open terms modal instead of navigating away
-  const openTerms = (e) => {
-    e && e.preventDefault && e.preventDefault();
-    // open modal and focus management handled in effect
-    setShowTermsModal(true);
-  };
-
-  // When terms modal is open, prevent body scroll
   useEffect(() => {
-    const prevOverflow = document.body.style.overflow;
-    if (showTermsModal) {
-      previouslyFocusedRef.current = document.activeElement;
-      document.body.style.overflow = "hidden";
-      // focus the close button after a tick
-      setTimeout(() => {
-        if (modalCloseBtnRef.current) modalCloseBtnRef.current.focus();
-      }, 0);
-    } else {
-      document.body.style.overflow = prevOverflow || "";
-      // restore focus
-      try {
-        if (previouslyFocusedRef.current && previouslyFocusedRef.current.focus) {
-          previouslyFocusedRef.current.focus();
-        }
-      } catch (e) {}
-    }
-    return () => {
-      document.body.style.overflow = prevOverflow || "";
+    if (!countryMenuOpen) return undefined;
+
+    const closeMenu = (event) => {
+      if (!event.target.closest(".country-picker")) {
+        setCountryMenuOpen(false);
+      }
     };
-  }, [showTermsModal]);
 
-  // Accessibility: close on Escape, trap focus inside modal
-  useEffect(() => {
-    if (!showTermsModal) return;
+    document.addEventListener("mousedown", closeMenu);
 
-    function onKeyDown(e) {
-      if (e.key === "Escape") {
-        setShowTermsModal(false);
-        return;
-      }
-      if (e.key === "Tab") {
-        // simple focus trap
-        const root = modalRef.current;
-        if (!root) return;
-        const focusable = root.querySelectorAll(
-          'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
-        );
-        if (!focusable || focusable.length === 0) return;
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
-        if (e.shiftKey) {
-          if (document.activeElement === first) {
-            e.preventDefault();
-            last.focus();
-          }
-        } else {
-          if (document.activeElement === last) {
-            e.preventDefault();
-            first.focus();
-          }
-        }
-      }
-    }
-
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [showTermsModal]);
-
-  // click outside modal content to close
-  const onOverlayClick = (e) => {
-    if (e.target === e.currentTarget) {
-      setShowTermsModal(false);
-    }
-  };
+    return () => {
+      document.removeEventListener("mousedown", closeMenu);
+    };
+  }, [countryMenuOpen]);
 
   return (
-    <div className="register-bg-hero flex items-center justify-center min-h-screen relative">
-      {fadeMsg && <GreyFadeMessage message={fadeMsg} />}
+    <div className="register-page">
+      {fadeMsg && <FadeMessage message={fadeMsg} />}
       {showSpinner && <SpinnerOverlay />}
-      <div className="register-bg-overlay"></div>
 
-      {/* LanguageSwitcher: fixed to the extreme top-right corner, scaled down for neat fit */}
-      <div
-        style={{
-          position: "fixed",
-          top: 8,
-          right: 8,
-          zIndex: 10050,
-          transform: "scale(0.82)",
-          transformOrigin: "top right",
-          pointerEvents: "auto",
-        }}
-      >
-        <LanguageSwitcher />
-      </div>
+      <main className="register-container">
+        <img src={logo} alt="Instrument" className="register-logo" />
 
-      {/* Absolutely position the logo at the top center */}
-      <div className="register-logo-absolute">
-        <img src={logo} alt="Stacks Logo" className="register-logo-img register-logo-img-white" />
-      </div>
-      <div className="register-content-centered z-10">
-        <h2 className="register-title" data-i18n="Register Now">
-          Register Now
-        </h2>
+        <h1 className="register-welcome">WELCOME TO</h1>
+
+        <h2 className="register-heading">REGISTER TO JOIN US</h2>
+
         <form className="register-form" onSubmit={handleRegister}>
-          {/* Username */}
-          <div className="register-input-row">
-            <label className="register-label" data-i18n="Username">
-              Username
-            </label>
-            <div className="register-input-placeholder-wrap">
-              <input
-                name="username"
-                type="text"
-                className="register-input"
-                placeholder="Username"
-                data-i18n="Username"
-                value={formData.username}
-                onChange={handleChange}
-                required
-                autoComplete="username"
-              />
-              {!formData.username && (
-                <span className="register-placeholder right-align" data-i18n="Username">
-                  Username
-                </span>
+          <div className="register-field">
+            <input
+              name="username"
+              type="text"
+              placeholder="Username"
+              value={formData.username}
+              onChange={handleChange}
+              required
+              autoComplete="username"
+            />
+          </div>
+
+          <div className="register-field">
+            <input
+              name="email"
+              type="email"
+              placeholder="Email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              autoComplete="email"
+            />
+          </div>
+
+          <div className="register-field phone-field">
+            <div className="country-picker">
+              <button
+                type="button"
+                className="country-picker-button"
+                onClick={() => setCountryMenuOpen((open) => !open)}
+                aria-expanded={countryMenuOpen}
+                aria-label="Select country"
+              >
+                <span className="country-flag">{currentCountry?.flag}</span>
+                <span className="country-chevron" />
+              </button>
+
+              {countryMenuOpen && (
+                <div className="country-menu">
+                  <div className="country-search-wrapper">
+                    <input
+                      type="search"
+                      value={countrySearch}
+                      onChange={(event) => setCountrySearch(event.target.value)}
+                      placeholder="Search country"
+                      className="country-search"
+                      autoFocus
+                    />
+                  </div>
+
+                  <div className="country-options">
+                    {visibleCountries.map((country) => (
+                      <button
+                        type="button"
+                        className={`country-option ${
+                          country.code === selectedCountry ? "selected" : ""
+                        }`}
+                        key={`${country.code}-${country.dialCode}`}
+                        onClick={() => chooseCountry(country)}
+                      >
+                        <span className="country-option-flag">{country.flag}</span>
+                        <span className="country-option-name">{country.name}</span>
+                        <span className="country-option-code">{country.dialCode}</span>
+                      </button>
+                    ))}
+
+                    {visibleCountries.length === 0 && (
+                      <div className="country-empty">No countries found</div>
+                    )}
+                  </div>
+                </div>
               )}
             </div>
+
+            <input
+              name="phone"
+              type="tel"
+              placeholder="Enter a phone number"
+              value={formData.phone}
+              onChange={handleChange}
+              required
+              autoComplete="tel"
+            />
           </div>
-          {/* Phone */}
-          <div className="register-input-row">
-            <label className="register-label" data-i18n="Phone">
-              Phone
-            </label>
-            <div className="register-input-placeholder-wrap">
-              <input
-                name="phone"
-                type="text"
-                className="register-input"
-                placeholder="Phone"
-                data-i18n="Phone"
-                value={formData.phone}
-                onChange={handleChange}
-                required
-                autoComplete="tel"
-              />
-              {!formData.phone && (
-                <span className="register-placeholder right-align" data-i18n="Phone">
-                  Phone
-                </span>
-              )}
-            </div>
+
+          <div className="register-field password-field">
+            <input
+              name="withdrawalPassword"
+              type={showPassword.withdrawalPassword ? "text" : "password"}
+              placeholder="Transaction Password"
+              value={formData.withdrawalPassword}
+              onChange={handleChange}
+              required
+              autoComplete="new-password"
+            />
+
+            <button
+              type="button"
+              className="toggle-password"
+              onClick={() => togglePassword("withdrawalPassword")}
+              aria-label="Toggle transaction password visibility"
+            >
+              <EyeIcon />
+            </button>
           </div>
-          {/* Withdrawal Password */}
-          <div className="register-input-row">
-            <label className="register-label" data-i18n="Withdrawal Password">
-              Withdrawal Password
-            </label>
-            <div className="register-input-placeholder-wrap">
-              <input
-                name="withdrawalPassword"
-                type="password"
-                className="register-input"
-                placeholder="Withdrawal Password"
-                data-i18n="Withdrawal Password"
-                value={formData.withdrawalPassword}
-                onChange={handleChange}
-                required
-                autoComplete="new-password"
-              />
-              {!formData.withdrawalPassword && (
-                <span className="register-placeholder right-align" data-i18n="Withdrawal Password">
-                  Withdrawal Password
-                </span>
-              )}
-            </div>
+
+          <div className="register-field password-field">
+            <input
+              name="password"
+              type={showPassword.password ? "text" : "password"}
+              placeholder="Login Password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              autoComplete="new-password"
+            />
+
+            <button
+              type="button"
+              className="toggle-password"
+              onClick={() => togglePassword("password")}
+              aria-label="Toggle login password visibility"
+            >
+              <EyeIcon />
+            </button>
           </div>
-          {/* Password */}
-          <div className="register-input-row">
-            <label className="register-label" data-i18n="Password">
-              Password
-            </label>
-            <div className="register-input-placeholder-wrap">
-              <input
-                name="password"
-                type="password"
-                className="register-input"
-                placeholder="Password"
-                data-i18n="Password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                autoComplete="new-password"
-              />
-              {!formData.password && (
-                <span className="register-placeholder right-align" data-i18n="Password">
-                  Password
-                </span>
-              )}
-            </div>
+
+          <div className="register-field password-field">
+            <input
+              name="confirmPassword"
+              type={showPassword.confirmPassword ? "text" : "password"}
+              placeholder="Confirm Login Password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              required
+              autoComplete="new-password"
+            />
+
+            <button
+              type="button"
+              className="toggle-password"
+              onClick={() => togglePassword("confirmPassword")}
+              aria-label="Toggle confirmation password visibility"
+            >
+              <EyeIcon />
+            </button>
           </div>
-          {/* Confirm Password */}
-          <div className="register-input-row">
-            <label className="register-label" data-i18n="Confirm Password">
-              Confirm Password
-            </label>
-            <div className="register-input-placeholder-wrap">
-              <input
-                name="confirmPassword"
-                type="password"
-                className="register-input"
-                placeholder="Confirm Password"
-                data-i18n="Confirm Password"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                required
-                autoComplete="new-password"
-              />
-              {!formData.confirmPassword && (
-                <span className="register-placeholder right-align" data-i18n="Confirm Password">
-                  Confirm Password
-                </span>
-              )}
-            </div>
-          </div>
-          {/* Gender */}
-          <div className="register-input-row register-gender-row">
-            <label className="register-label" data-i18n="Gender">
-              Gender
-            </label>
-            <div className="register-gender-group right-gender">
-              <label className="register-radio-label">
+
+          <div className="register-field gender-field">
+            <span className="gender-title">Gender</span>
+
+            <div className="gender-options">
+              <label className="gender-option">
                 <input
                   type="radio"
                   name="gender"
                   value="Male"
                   checked={formData.gender === "Male"}
                   onChange={handleChange}
-                  required
                 />
-                <span className="register-radio-text" data-i18n="Male" style={{ color: HIGHLIGHT_COLOR, fontWeight: 700 }}>
-                  Male
-                </span>
+                <span className="gender-radio" />
+                <span>Male</span>
               </label>
-              <label className="register-radio-label">
+
+              <label className="gender-option">
                 <input
                   type="radio"
                   name="gender"
                   value="Female"
                   checked={formData.gender === "Female"}
                   onChange={handleChange}
-                  required
                 />
-                <span className="register-radio-text" data-i18n="Female" style={{ color: HIGHLIGHT_COLOR, fontWeight: 700 }}>
-                  Female
-                </span>
+                <span className="gender-radio" />
+                <span>Female</span>
               </label>
             </div>
           </div>
-          {/* Invite Code */}
-          <div className="register-input-row">
-            <label className="register-label" data-i18n="Invite Code">
-              Invite Code
-            </label>
-            <div className="register-input-placeholder-wrap">
-              <input
-                name="inviteCode"
-                type="text"
-                className="register-input"
-                placeholder="Invite Code"
-                data-i18n="Invite Code"
-                value={formData.inviteCode}
-                onChange={handleChange}
-                required
-                autoComplete="off"
-              />
-              {!formData.inviteCode && (
-                <span className="register-placeholder right-align" data-i18n="Invite Code">
-                  Invite Code
-                </span>
-              )}
-            </div>
+
+          <div className="register-field">
+            <input
+              name="inviteCode"
+              type="text"
+              placeholder="Invite Code"
+              value={formData.inviteCode}
+              onChange={handleChange}
+              autoComplete="off"
+            />
           </div>
 
-          {/* Checkbox + separated Terms link (anchor moved OUT of label for reliability) */}
-          <div className="register-checkbox-row">
+          <label className="terms-row">
             <input
               type="checkbox"
-              className="register-checkbox"
               name="agreed"
               checked={formData.agreed}
               onChange={handleChange}
-              id="agreed"
             />
-            <label htmlFor="agreed" className="register-checkbox-label" data-i18n="I agree with">
-              I agree with
-            </label>
-
-            {/* Anchor is a sibling (not inside label). This ensures the label only toggles the checkbox
-                and the link reliably receives click events to open the modal. */}
-            <a
-              href="#terms"
-              className="register-link-terms"
-              onClick={(e) => {
-                e.preventDefault();
-                openTerms(e);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  openTerms(e);
-                }
-              }}
-              role="button"
-              tabIndex={0}
-              data-i18n="Terms and Conditions"
-              style={{ color: HIGHLIGHT_COLOR, fontWeight: 700, textDecoration: "none", marginLeft: 8 }}
-            >
+            <span className="terms-checkbox" />
+            <span>Accept ours</span>
+            <Link to="/terms" className="terms-link">
               Terms and Conditions
-            </a>
-          </div>
+            </Link>
+          </label>
 
-          <button type="submit" className="register-btn" data-i18n="Register">
-            Register
+          <button type="submit" className="register-submit">
+            Submit
           </button>
         </form>
-        <div className="register-bottom-link">
-          <Link to="/login" className="register-link" data-i18n="Back to Login">
-            Back to Login
-          </Link>
-        </div>
-      </div>
 
-      {/* Moved chat/customer-service icon slightly down so it doesn't overlap the language switcher */}
+        <p className="register-agreement">
+          By signing up, you agree to our <Link to="/terms">Terms and Conditions</Link>
+        </p>
+
+        <p className="register-login-link">
+          Already have an account? <Link to="/login">Login</Link>
+        </p>
+      </main>
+
       <button
         type="button"
+        className="register-support-button"
         onClick={() => setShowCustomerModal(true)}
-        className="customer-service-btn-top"
-        title="Customer Service"
-        style={{
-          position: "absolute",
-          top: 58, /* moved lower to clear language switcher */
-          right: 23,
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          zIndex: 30,
-        }}
+        aria-label="Open customer support"
       >
-        <svg height="27" width="27" viewBox="0 0 24 24" fill="white">
-          <path d="M12 12.713l-11.714-7.713v15h23.428v-15zm11.714-8.713h-23.428l11.714 7.713z" />
-        </svg>
+        ?
       </button>
 
-      {/* Customer service modal */}
-      <CustomerServiceModal open={showCustomerModal} onClose={() => setShowCustomerModal(false)} />
-
-      {/* NEW: Terms & Conditions Modal */}
-      {showTermsModal && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Terms and Conditions"
-          onClick={onOverlayClick}
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 30000,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "rgba(0,0,0,0.6)",
-            padding: 20,
-          }}
-        >
-          <div
-            ref={modalRef}
-            style={{
-              width: "100%",
-              maxWidth: 980,
-              height: "90vh",
-              background: "#fff",
-              borderRadius: 12,
-              overflow: "hidden",
-              boxShadow: "0 12px 50px rgba(0,0,0,0.6)",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderBottom: "1px solid #eee" }}>
-              <div style={{ fontWeight: 700, fontSize: 16 }}>Terms and Conditions</div>
-              <div style={{ display: "flex", gap: 8 }}>
-                <button
-                  ref={modalCloseBtnRef}
-                  onClick={() => setShowTermsModal(false)}
-                  style={{
-                    background: "transparent",
-                    border: "1px solid #ddd",
-                    padding: "6px 12px",
-                    borderRadius: 8,
-                    cursor: "pointer",
-                    fontWeight: 600
-                  }}
-                  className="modal-close-button"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-
-            {/* Modal content area: render TermsAndConditions component inside a wrapper.
-                We add a small override so the fixed header inside TermsAndConditions doesn't conflict.
-                We keep this wrapper's overflow scrollable so the terms content can be read. */}
-            <div style={{ flex: 1, overflow: "auto", position: "relative", background: "#fff" }} className="modal-root-terms">
-              <style>
-                {`
-                  /* Hide the fixed top bar from TermsAndConditions when rendered inside this modal */
-                  .modal-root-terms .fixed.top-0.left-0.right-0 { display: none !important; }
-                  /* Adjust absolute content positioning from TermsAndConditions to flow naturally inside modal */
-                  .modal-root-terms .absolute.top-16.bottom-0.left-0.right-0 {
-                    position: relative !important;
-                    top: 0 !important;
-                    bottom: 0 !important;
-                    left: 0 !important;
-                    right: 0 !important;
-                    height: auto !important;
-                    overflow: visible !important;
-                  }
-                  /* Ensure internal paddings look good */
-                  .modal-root-terms .absolute.top-16.bottom-0.left-0.right-0 > * {
-                    padding: 18px !important;
-                    background: transparent !important;
-                  }
-                `}
-              </style>
-              <div style={{ padding: 0 }}>
-                <TermsAndConditions />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <CustomerServiceModal
+        open={showCustomerModal}
+        onClose={() => setShowCustomerModal(false)}
+      />
     </div>
   );
 }

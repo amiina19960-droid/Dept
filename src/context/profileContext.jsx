@@ -1,6 +1,15 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
-const API_URL = process.env.REACT_APP_API_URL || "https://stacks-admin.onrender.com";
+// Vite uses import.meta.env instead of process.env.
+// VITE_API_URL can be configured in a .env file.
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://stacks-admin.onrender.com";
 
 const ProfileContext = createContext({
   profile: null,
@@ -36,49 +45,69 @@ async function fetchProfileFromServer(token, timeoutMs = 3000, attempt = 1) {
 
     clearTimeout(timeout);
 
-    // If server rejects the token, proactively clear local auth and notify app
+    // If server rejects the token, proactively clear local auth and notify app.
     if (resp.status === 401 || resp.status === 403) {
       try {
-        // remove local stored tokens/profile so client stops sending dead token
+        // Remove locally stored tokens/profile so the client stops sending
+        // an invalid token.
         localStorage.removeItem("authToken");
         localStorage.removeItem("token");
         localStorage.removeItem("userProfile");
         localStorage.removeItem("currentUser");
-        // dispatch global event so app can redirect or show message
+
+        // Dispatch a global event so the app can redirect or show a message.
         window.dispatchEvent(new Event("auth:logout"));
       } catch (e) {
-        // ignore storage errors
+        // Ignore storage errors.
       }
+
       return null;
     }
 
     if (!resp.ok) {
-      throw new Error("Non-OK response: " + resp.status);
+      throw new Error(`Non-OK response: ${resp.status}`);
     }
 
     const data = await resp.json();
-    if (data && data.success && data.user) return data.user;
+
+    if (data && data.success && data.user) {
+      return data.user;
+    }
+
     return null;
   } catch (err) {
     clearTimeout(timeout);
-    // Retry once for transient errors (network hiccup)
+
+    // Retry once for transient errors such as a network hiccup.
     if (attempt < 2) {
-      await new Promise((r) => setTimeout(r, 250));
-      return fetchProfileFromServer(token, Math.min(timeoutMs * 1.5, 5000), attempt + 1);
+      await new Promise((resolve) => setTimeout(resolve, 250));
+
+      return fetchProfileFromServer(
+        token,
+        Math.min(timeoutMs * 1.5, 5000),
+        attempt + 1
+      );
     }
+
     return null;
   }
 }
 
 export function ProfileProvider({ children }) {
   const [profile, setProfileState] = useState(() => {
-    // synchronous hydration from localStorage for instant UI
+    // Synchronous hydration from localStorage for instant UI.
     try {
-      const raw = localStorage.getItem("userProfile") || localStorage.getItem("currentUser");
-      if (raw) return JSON.parse(raw);
+      const raw =
+        localStorage.getItem("userProfile") ||
+        localStorage.getItem("currentUser");
+
+      if (raw) {
+        return JSON.parse(raw);
+      }
     } catch (e) {
-      // ignore parse errors
+      // Ignore parse errors.
     }
+
     return null;
   });
 
@@ -88,8 +117,10 @@ export function ProfileProvider({ children }) {
 
   useEffect(() => {
     mountedRef.current = true;
+
     return () => {
       mountedRef.current = false;
+
       if (pendingRefreshRef.current) {
         clearTimeout(pendingRefreshRef.current);
         pendingRefreshRef.current = null;
@@ -97,7 +128,7 @@ export function ProfileProvider({ children }) {
     };
   }, []);
 
-  // Keep localStorage in sync whenever profile changes
+  // Keep localStorage in sync whenever profile changes.
   useEffect(() => {
     try {
       if (profile) {
@@ -108,108 +139,158 @@ export function ProfileProvider({ children }) {
         localStorage.removeItem("userProfile");
       }
     } catch (e) {
-      // ignore storage errors
+      // Ignore storage errors.
     }
   }, [profile]);
 
-  // Listen to profile:updated events and storage events (cross-tab)
+  // Listen to profile:updated events and storage events across tabs.
   useEffect(() => {
     function onProfileUpdated(evt) {
       try {
         const payload = evt?.detail;
+
         if (payload && typeof payload === "object") {
-          if (mountedRef.current) setProfileState(payload);
+          if (mountedRef.current) {
+            setProfileState(payload);
+          }
         } else {
-          // fallback: rehydrate from localStorage
-          const raw = localStorage.getItem("userProfile") || localStorage.getItem("currentUser");
-          if (raw && mountedRef.current) setProfileState(JSON.parse(raw));
+          // Fallback: rehydrate from localStorage.
+          const raw =
+            localStorage.getItem("userProfile") ||
+            localStorage.getItem("currentUser");
+
+          if (raw && mountedRef.current) {
+            setProfileState(JSON.parse(raw));
+          }
         }
-      } catch (_) {}
+      } catch (_) {
+        // Ignore profile update errors.
+      }
     }
 
     function onStorage(e) {
       if (!e) return;
+
       if (e.key === "userProfile" || e.key === "currentUser") {
         try {
           const raw = e.newValue;
+
           if (raw) {
             const parsed = JSON.parse(raw);
-            if (mountedRef.current) setProfileState(parsed);
-          } else {
-            if (mountedRef.current) setProfileState(null);
+
+            if (mountedRef.current) {
+              setProfileState(parsed);
+            }
+          } else if (mountedRef.current) {
+            setProfileState(null);
           }
-        } catch (_) {}
+        } catch (_) {
+          // Ignore storage parsing errors.
+        }
       }
+
       if (e.key === "authToken" && !e.newValue) {
-        // token removed -> clear profile
-        if (mountedRef.current) setProfileState(null);
+        // Token removed, so clear the profile.
+        if (mountedRef.current) {
+          setProfileState(null);
+        }
       }
     }
 
     window.addEventListener("profile:updated", onProfileUpdated);
     window.addEventListener("storage", onStorage);
+
     return () => {
       window.removeEventListener("profile:updated", onProfileUpdated);
       window.removeEventListener("storage", onStorage);
     };
   }, []);
 
-  // fetchProfile: wrapper that calls fetchProfileFromServer(token)
+  // fetchProfile: wrapper that calls fetchProfileFromServer(token).
   const fetchProfile = async (tokenArg = null, timeoutMs = 3000) => {
-    const token = tokenArg || localStorage.getItem("authToken") || localStorage.getItem("token");
+    const token =
+      tokenArg ||
+      localStorage.getItem("authToken") ||
+      localStorage.getItem("token");
+
     if (!token) {
-      if (mountedRef.current) setProfileState(null);
+      if (mountedRef.current) {
+        setProfileState(null);
+      }
+
       return null;
     }
 
     setIsLoading(true);
+
     try {
       const user = await fetchProfileFromServer(token, timeoutMs);
+
       if (user && mountedRef.current) {
         setProfileState(user);
-        // broadcast to the app that profile updated
+
+        // Broadcast to the app that the profile was updated.
         try {
-          window.dispatchEvent(new CustomEvent("profile:updated", { detail: user }));
-        } catch (e) {}
+          window.dispatchEvent(
+            new CustomEvent("profile:updated", {
+              detail: user,
+            })
+          );
+        } catch (e) {
+          // Ignore event errors.
+        }
       }
+
       return user;
     } finally {
       setTimeout(() => {
-        if (mountedRef.current) setIsLoading(false);
+        if (mountedRef.current) {
+          setIsLoading(false);
+        }
       }, 80);
     }
   };
 
-  // setter that synchronizes storage + broadcasts event
+  // Setter that synchronizes storage and broadcasts an event.
   const setProfile = (user) => {
     if (!mountedRef.current) return;
+
     setProfileState(user);
+
     try {
       if (user) {
         localStorage.setItem("userProfile", JSON.stringify(user));
         localStorage.setItem("currentUser", JSON.stringify(user));
         localStorage.setItem("profileFetchedAt", String(Date.now()));
-        window.dispatchEvent(new CustomEvent("profile:updated", { detail: user }));
+
+        window.dispatchEvent(
+          new CustomEvent("profile:updated", {
+            detail: user,
+          })
+        );
       } else {
         localStorage.removeItem("userProfile");
+        localStorage.removeItem("currentUser");
       }
     } catch (e) {
-      // ignore
+      // Ignore storage errors.
     }
   };
 
-  // Debounced listener: refresh on 'balance:changed' and 'profile:refresh'
+  // Debounced listener: refresh on balance:changed and profile:refresh.
   useEffect(() => {
     function scheduleImmediateRefresh(delay = 250) {
       if (pendingRefreshRef.current) {
         clearTimeout(pendingRefreshRef.current);
       }
+
       pendingRefreshRef.current = setTimeout(async () => {
         pendingRefreshRef.current = null;
+
         try {
           await fetchProfile(null, 3000);
         } catch (e) {
-          // ignore
+          // Ignore refresh errors.
         }
       }, delay);
     }
@@ -223,25 +304,31 @@ export function ProfileProvider({ children }) {
     return () => {
       window.removeEventListener("balance:changed", onBalanceChanged);
       window.removeEventListener("profile:refresh", onProfileRefresh);
+
       if (pendingRefreshRef.current) {
         clearTimeout(pendingRefreshRef.current);
         pendingRefreshRef.current = null;
       }
     };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Background refresh once on mount (non-blocking)
+  // Background refresh once on mount.
   useEffect(() => {
-    const token = localStorage.getItem("authToken") || localStorage.getItem("token");
+    const token =
+      localStorage.getItem("authToken") || localStorage.getItem("token");
+
     if (!token) return;
+
     (async () => {
       try {
         await fetchProfile(token, 3000);
       } catch (e) {
-        // ignore
+        // Ignore background refresh errors.
       }
     })();
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -252,7 +339,11 @@ export function ProfileProvider({ children }) {
     isLoading,
   };
 
-  return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;
+  return (
+    <ProfileContext.Provider value={value}>
+      {children}
+    </ProfileContext.Provider>
+  );
 }
 
 export function useProfile() {

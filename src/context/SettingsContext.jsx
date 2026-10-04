@@ -1,58 +1,101 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
-const API_URL = process.env.REACT_APP_API_URL || "https://stacks-admin.onrender.com";
+// Vite uses import.meta.env instead of process.env.
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://stacks-admin.onrender.com";
 
 const SettingsContext = createContext({
   settings: null,
   loading: true,
   refresh: async () => {},
   currency: "",
-  formatAmount: (v) => String(v),
+  formatAmount: (value) => String(value),
 });
 
 export const useSettings = () => useContext(SettingsContext);
 
 /**
  * SettingsProvider
- * - Fetches settings from GET /api/settings on mount
- * - Exposes: settings, loading, refresh(), currency (raw string), formatAmount()
  *
- * formatAmount: returns the numeric value to 2 decimals followed by a space and the raw currency string
- * Example: 0.00 USDT  or  12.34 GBP
+ * Fetches settings from GET /api/settings on mount.
+ *
+ * Exposes:
+ * - settings
+ * - loading
+ * - refresh()
+ * - currency
+ * - formatAmount()
+ *
+ * formatAmount returns the numeric value to 2 decimals followed by
+ * a space and the raw currency string.
+ *
+ * Examples:
+ * - 0.00 USDT
+ * - 12.34 GBP
  */
 export const SettingsProvider = ({ children }) => {
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const parseResponseToSettings = (json) => {
-    // Accept multiple shapes:
-    // 1) { success: true, settings: {...} }
-    // 2) { settings: {...} }
-    // 3) direct settings object { currency: "USDT", ... }
-    if (!json) return null;
-    if (json.success && json.settings) return json.settings;
-    if (json.settings) return json.settings;
-    // fallback: if it looks like a settings object (has currency or siteName) return it
-    if (typeof json === "object" && (json.currency || json.siteName || json.defaultVip)) return json;
+    // Supported response shapes:
+    //
+    // 1. { success: true, settings: {...} }
+    // 2. { settings: {...} }
+    // 3. Direct settings object:
+    //    { currency: "USDT", ... }
+
+    if (!json) {
+      return null;
+    }
+
+    if (json.success && json.settings) {
+      return json.settings;
+    }
+
+    if (json.settings) {
+      return json.settings;
+    }
+
+    // Fallback: identify a direct settings object.
+    if (
+      typeof json === "object" &&
+      (json.currency || json.siteName || json.defaultVip)
+    ) {
+      return json;
+    }
+
     return null;
   };
 
   const fetchSettings = async () => {
     setLoading(true);
+
     try {
-      const res = await fetch(`${API_URL}/api/settings`);
-      if (!res.ok) {
-        // If the endpoint returns 4xx/5xx, we still avoid crashing — keep previous settings
-        console.warn("Failed to fetch settings, status:", res.status);
-        setLoading(false);
+      const response = await fetch(`${API_URL}/api/settings`);
+
+      if (!response.ok) {
+        // Keep previous settings if the API returns an error.
+        console.warn(
+          "Failed to fetch settings. HTTP status:",
+          response.status
+        );
+
         return;
       }
-      const json = await res.json();
-      const s = parseResponseToSettings(json);
-      setSettings(s);
-    } catch (err) {
-      console.error("Settings fetch error:", err);
-      // don't wipe settings on transient error
+
+      const json = await response.json();
+      const parsedSettings = parseResponseToSettings(json);
+
+      setSettings(parsedSettings);
+    } catch (error) {
+      // Do not crash the application if the API is unavailable.
+      console.error("Settings fetch error:", error);
     } finally {
       setLoading(false);
     }
@@ -60,18 +103,26 @@ export const SettingsProvider = ({ children }) => {
 
   useEffect(() => {
     fetchSettings();
-    // OPTIONAL: later you can add a websocket/socket listener here that calls setSettings(...) when admin updates settings
+
+    // You can add a WebSocket or event listener here later
+    // if settings need to update automatically.
   }, []);
 
   const currency = settings?.currency ?? "";
 
-  const formatAmount = (value, opts = {}) => {
-    const decimals = Number.isInteger(opts.decimals) ? opts.decimals : 2;
+  const formatAmount = (value, options = {}) => {
+    const decimals = Number.isInteger(options.decimals)
+      ? options.decimals
+      : 2;
+
     const amount = Number(value || 0);
-    const num = amount.toFixed(decimals);
-    if (!currency) return num;
-    // Return numeric amount followed by a space and the exact currency string stored in settings
-    return `${num} ${currency}`;
+    const formattedNumber = amount.toFixed(decimals);
+
+    if (!currency) {
+      return formattedNumber;
+    }
+
+    return `${formattedNumber} ${currency}`;
   };
 
   return (
