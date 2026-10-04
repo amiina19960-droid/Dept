@@ -45,12 +45,10 @@ const styles = `
 
   .dashboard-page {
     min-height: 100vh;
-    padding-bottom: 120px;
+    padding-bottom: 92px;
     overflow-x: hidden;
-    background:
-      radial-gradient(circle at 50% 35%, rgba(0, 102, 190, 0.13), transparent 38%),
-      linear-gradient(180deg, #03152d 0%, #021b38 48%, #031a34 100%);
-    color: #f4f8ff;
+    background: #ffffff;
+    color: #000000;
     font-family: "Century Gothic", "Trebuchet MS", Arial, sans-serif;
   }
 
@@ -64,44 +62,22 @@ const styles = `
     font-family: inherit;
   }
 
-  /* Updated dashboard header */
   .dashboard-header {
-    position: sticky;
-    top: 0;
-    z-index: 100;
     display: flex;
     align-items: center;
     justify-content: space-between;
     min-height: clamp(72px, 9vw, 96px);
     padding: clamp(14px, 2vw, 20px) clamp(18px, 4.2vw, 42px);
-    border-bottom: 1px solid rgba(0, 191, 243, 0.32);
-    background:
-      linear-gradient(
-        110deg,
-        rgba(4, 25, 52, 0.99) 0%,
-        rgba(3, 19, 42, 0.99) 55%,
-        rgba(12, 20, 58, 0.99) 100%
-      );
-    box-shadow:
-      0 8px 24px rgba(0, 0, 0, 0.22),
-      inset 0 -1px 0 rgba(112, 70, 223, 0.12);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid #dddddd;
+    background: #ffffff;
   }
 
   .dashboard-logo {
-    display: block;
     width: clamp(190px, 31vw, 470px);
     max-width: 52%;
     height: clamp(32px, 5.5vw, 58px);
     object-fit: contain;
     object-position: left center;
-    filter: brightness(0) invert(1);
-    transition: opacity 180ms ease;
-  }
-
-  .dashboard-logo:hover {
-    opacity: 0.88;
   }
 
   .dashboard-header-actions {
@@ -111,52 +87,15 @@ const styles = `
   }
 
   .dashboard-contact {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
     min-width: clamp(112px, 14vw, 178px);
     height: clamp(40px, 5vw, 62px);
     padding: 0 clamp(16px, 2vw, 26px);
-    border: 1px solid rgba(0, 191, 243, 0.8);
+    border: 0;
     border-radius: 40px;
-    color: #f4f8ff;
-    background:
-      linear-gradient(
-        110deg,
-        rgba(7, 39, 76, 0.96),
-        rgba(14, 34, 72, 0.96)
-      );
+    color: #ffffff;
+    background: #000000;
     font-size: clamp(0.85rem, 1.65vw, 1.65rem);
-    font-weight: 700;
-    letter-spacing: 0.015em;
     cursor: pointer;
-    box-shadow:
-      inset 0 0 0 1px rgba(119, 72, 230, 0.24),
-      0 4px 16px rgba(0, 0, 0, 0.16);
-    transition:
-      background 180ms ease,
-      border-color 180ms ease,
-      box-shadow 180ms ease,
-      transform 180ms ease;
-  }
-
-  .dashboard-contact:hover {
-    border-color: #7048df;
-    background:
-      linear-gradient(
-        110deg,
-        rgba(8, 54, 98, 0.98),
-        rgba(31, 35, 91, 0.98)
-      );
-    box-shadow:
-      inset 0 0 0 1px rgba(0, 191, 243, 0.22),
-      0 0 18px rgba(0, 191, 243, 0.16);
-    transform: translateY(-1px);
-  }
-
-  .dashboard-contact:active {
-    transform: translateY(0);
   }
 
   .dashboard-menu {
@@ -175,21 +114,7 @@ const styles = `
     display: block;
     width: 100%;
     height: clamp(2px, 0.35vw, 4px);
-    border-radius: 20px;
-    background: linear-gradient(
-      90deg,
-      #00bff3 0%,
-      #168fe4 58%,
-      #7048df 100%
-    );
-    box-shadow: 0 0 8px rgba(0, 191, 243, 0.16);
-    transition:
-      opacity 180ms ease,
-      transform 180ms ease;
-  }
-
-  .dashboard-menu:hover span {
-    box-shadow: 0 0 12px rgba(0, 191, 243, 0.34);
+    background: #000000;
   }
 
   .dashboard-content {
@@ -197,7 +122,6 @@ const styles = `
     margin: 0 auto;
   }
 
-  /* Updated notice row and icon */
   .dashboard-notice {
     position: relative;
     display: flex;
@@ -205,13 +129,7 @@ const styles = `
     gap: clamp(8px, 1.8vw, 18px);
     min-height: clamp(58px, 8vw, 102px);
     overflow: hidden;
-    border-bottom: 1px solid rgba(0, 191, 243, 0.24);
-    color: #eaf4ff;
-    background: linear-gradient(
-      90deg,
-      rgba(4, 27, 55, 0.68),
-      rgba(5, 23, 50, 0.38)
-    );
+    border-bottom: 1px solid #dddddd;
     font-size: clamp(0.8rem, 1.5vw, 1.5rem);
     white-space: nowrap;
   }
@@ -219,20 +137,12 @@ const styles = `
   .dashboard-notice-icon {
     position: relative;
     z-index: 2;
-    display: block;
-    flex: 0 0 auto;
     width: clamp(22px, 3.2vw, 42px);
     height: clamp(22px, 3.2vw, 42px);
-    padding: clamp(3px, 0.55vw, 6px);
+    flex: 0 0 auto;
     object-fit: contain;
-    border: 1px solid rgba(0, 191, 243, 0.28);
-    border-radius: 50%;
-    background: linear-gradient(
-      145deg,
-      rgba(0, 191, 243, 0.13),
-      rgba(112, 72, 223, 0.13)
-    );
-    box-shadow: 0 0 14px rgba(0, 191, 243, 0.08);
+    display: block;
+    background: #ffffff;
   }
 
   .dashboard-notice-track {
@@ -257,9 +167,8 @@ const styles = `
     height: clamp(250px, 51.6vw, 516px);
     margin-top: clamp(20px, 3.4vw, 34px);
     overflow: hidden;
-    border: 1px solid #087bd0;
     border-radius: clamp(12px, 1.8vw, 18px);
-    background: #062653;
+    background: #edf249;
   }
 
   .dashboard-banner video {
@@ -271,7 +180,6 @@ const styles = `
 
   .dashboard-intro {
     margin: clamp(22px, 3.4vw, 34px) 0 clamp(18px, 2.8vw, 28px);
-    color: #f3f7ff;
     font-size: clamp(1.25rem, 3.2vw, 3rem);
     line-height: 1.32;
     letter-spacing: -0.065em;
@@ -288,15 +196,9 @@ const styles = `
     border: 0;
     border-radius: 36px;
     color: #ffffff;
-    background: linear-gradient(
-      100deg,
-      #09b8e9 0%,
-      #148fe4 48%,
-      #7046df 100%
-    );
+    background: #000000;
     font-size: clamp(0.85rem, 1.3vw, 1.3rem);
     cursor: pointer;
-    box-shadow: 0 5px 18px rgba(0, 112, 210, 0.18);
   }
 
   .dashboard-black-button .arrow {
@@ -308,17 +210,11 @@ const styles = `
     width: 100%;
     height: clamp(1px, 0.2vw, 2px);
     margin: clamp(24px, 4.2vw, 42px) 0 clamp(20px, 3.4vw, 34px);
-    background: linear-gradient(
-      90deg,
-      #15518a 0%,
-      #078ed4 55%,
-      #1766a7 100%
-    );
+    background: #000000;
   }
 
   .dashboard-section-title {
     margin: 0 0 clamp(18px, 3.4vw, 34px);
-    color: #e6f3ff;
     font-size: clamp(1rem, 1.9vw, 1.9rem);
     font-weight: 400;
     letter-spacing: -0.065em;
@@ -339,18 +235,12 @@ const styles = `
     padding: clamp(20px, 3.8vw, 38px)
       clamp(10px, 2vw, 20px)
       clamp(16px, 2.8vw, 28px);
-    border: 1px solid #176db1;
+    border: 0;
     border-radius: clamp(12px, 2.5vw, 25px);
-    color: #f2f7ff;
+    color: #000000;
     font-size: clamp(1rem, 2vw, 2rem);
     letter-spacing: -0.06em;
     cursor: pointer;
-    background: linear-gradient(
-      145deg,
-      #072952 0%,
-      #061f42 100%
-    );
-    box-shadow: inset 0 0 25px rgba(0, 91, 174, 0.08);
   }
 
   .quick-link img {
@@ -360,57 +250,24 @@ const styles = `
   }
 
   .quick-link.event {
-    border-color: #079cd9;
-    background: linear-gradient(
-      145deg,
-      #062d57 0%,
-      #061f42 100%
-    );
+    background: #edf8e9;
   }
 
-  .quick-link.vip {
-    border-color: #7148df;
-    background: linear-gradient(
-      145deg,
-      #191d5a 0%,
-      #111b4a 100%
-    );
-  }
-
+  .quick-link.vip,
   .quick-link.faq {
-    border-color: #079cd9;
-    background: linear-gradient(
-      145deg,
-      #062d57 0%,
-      #061f42 100%
-    );
+    background: #beb4ad;
   }
 
   .quick-link.terms {
-    border-color: #7049df;
-    background: linear-gradient(
-      145deg,
-      #191d5a 0%,
-      #111b4a 100%
-    );
+    background: #f5ff7b;
   }
 
   .quick-link.certificate {
-    border-color: #079cd9;
-    background: linear-gradient(
-      145deg,
-      #062d57 0%,
-      #061f42 100%
-    );
+    background: #c9cdf5;
   }
 
   .quick-link.about {
-    border-color: #7049df;
-    background: linear-gradient(
-      145deg,
-      #191d5a 0%,
-      #111b4a 100%
-    );
+    background: #8d8e9b;
   }
 
   .recent-section {
@@ -431,9 +288,8 @@ const styles = `
     width: 100%;
     aspect-ratio: 1.05;
     overflow: hidden;
-    border: 1px solid #086ea9;
     border-radius: clamp(12px, 2vw, 20px);
-    background: #06244a;
+    background: #dddddd;
   }
 
   .recent-image img {
@@ -445,14 +301,13 @@ const styles = `
 
   .recent-card h3 {
     margin: clamp(10px, 1.8vw, 18px) 0 clamp(6px, 1vw, 10px);
-    color: #edf6ff;
     font-size: clamp(1rem, 2vw, 2rem);
     font-weight: 400;
     letter-spacing: -0.07em;
   }
 
   .recent-card small {
-    color: #00bff3;
+    color: #999999;
     font-size: clamp(0.7rem, 1.35vw, 1.35rem);
     letter-spacing: -0.04em;
   }
@@ -462,47 +317,27 @@ const styles = `
     padding: clamp(30px, 6.2vw, 62px)
       clamp(20px, 4.2vw, 42px)
       clamp(70px, 7.4vw, 100px);
-    border: 1px solid #1769b0;
-    border-radius: clamp(12px, 2vw, 20px);
-    background:
-      radial-gradient(
-        circle at 80% 80%,
-        rgba(55, 61, 190, 0.18),
-        transparent 30%
-      ),
-      linear-gradient(
-        145deg,
-        #071f4b 0%,
-        #061b3b 55%,
-        #081b45 100%
-      );
+    background: #e5eb45;
   }
 
   .services-label {
     display: block;
     margin-bottom: clamp(42px, 9vw, 90px);
-    color: #cde8ff;
     font-size: clamp(0.85rem, 1.15vw, 1.15rem);
   }
 
   .services h2 {
     max-width: 800px;
     margin: 0 0 clamp(40px, 9vw, 90px);
-    color: #eaf4ff;
     font-size: clamp(1.8rem, 4.5vw, 4.4rem);
     font-weight: 400;
     line-height: 1.12;
     letter-spacing: -0.07em;
   }
 
-  .services h2::first-line {
-    color: #eaf4ff;
-  }
-
   .services p {
     max-width: 950px;
     margin: 0 0 clamp(32px, 6.8vw, 68px);
-    color: #c8ddf5;
     font-size: clamp(0.95rem, 2.4vw, 2.25rem);
     line-height: 1.45;
     letter-spacing: -0.06em;
@@ -548,12 +383,12 @@ const styles = `
     padding: 0;
     border: 0;
     border-radius: 50%;
-    background: rgba(88, 150, 210, 0.35);
+    background: rgba(0, 0, 0, 0.25);
     cursor: pointer;
   }
 
   .services-slider-dot.active {
-    background: #08b9ec;
+    background: #000000;
   }
 
   .dashboard-footer {
@@ -583,14 +418,13 @@ const styles = `
     right: 0;
     bottom: 0;
     left: 0;
-    z-index: 9999;
+    z-index: 50;
     display: flex;
     align-items: flex-end;
     justify-content: space-around;
-    height: clamp(64px, 9.6vw, 90px);
-    padding: clamp(6px, 1.2vw, 10px) clamp(22px, 3.2vw, 32px);
-    border-top: 1px solid #17477a;
-    background: rgba(2, 16, 35, 0.98);
+    height: clamp(82px, 11.6vw, 116px);
+    padding: clamp(8px, 1.2vw, 12px) clamp(22px, 3.2vw, 32px);
+    background: #000000;
   }
 
   .bottom-item {
@@ -602,42 +436,25 @@ const styles = `
     border: 0;
     color: #ffffff;
     background: transparent;
-    font-size: clamp(0.78rem, 1.2vw, 1rem);
+    font-size: clamp(0.75rem, 1.3vw, 1.3rem);
     cursor: pointer;
-    padding-bottom: 8px;
   }
 
   .bottom-item img {
     width: clamp(30px, 4.3vw, 43px);
     height: clamp(30px, 4.3vw, 43px);
-    margin-bottom: 6px;
+    margin-bottom: clamp(4px, 0.8vw, 8px);
     object-fit: contain;
   }
 
   .bottom-item.starting {
-    transform: translateY(-10px);
-    position: relative;
-    padding-bottom: 6px;
+    transform: translateY(clamp(-30px, -3vw, -24px));
   }
 
   .bottom-item.starting img {
-    width: clamp(72px, 11vw, 104px);
-    height: clamp(72px, 11vw, 104px);
-    margin-bottom: 4px;
-    border-radius: 50%;
-    background: transparent;
-    box-shadow: 0 6px 20px rgba(0, 123, 210, 0.28);
-    position: relative;
-    z-index: 1;
-  }
-
-  .bottom-item span {
-    color: #ffffff;
-    font-size: clamp(12px, 1.2vw, 14px);
-    font-weight: 700;
-    line-height: 1.1;
-    margin: 0;
-    padding-bottom: 4px;
+    width: clamp(76px, 12.4vw, 124px);
+    height: clamp(76px, 12.4vw, 124px);
+    margin-bottom: clamp(-13px, -1.3vw, -8px);
   }
 
   .reward-overlay,
@@ -649,7 +466,7 @@ const styles = `
     align-items: center;
     justify-content: center;
     padding: 24px;
-    background: rgba(0, 8, 22, 0.82);
+    background: rgba(0, 0, 0, 0.7);
   }
 
   .reward-modal {
@@ -657,9 +474,7 @@ const styles = `
     width: min(900px, 100%);
     max-height: calc(100vh - 48px);
     overflow-y: auto;
-    border: 1px solid #1769b0;
-    border-radius: 18px;
-    background: #061c39;
+    background: #ffffff;
   }
 
   .reward-image {
@@ -678,10 +493,10 @@ const styles = `
     justify-content: center;
     width: 46px;
     height: 46px;
-    border: 1px solid #2d8bda;
+    border: 2px solid #ffffff;
     border-radius: 50%;
     color: #ffffff;
-    background: rgba(2, 19, 42, 0.75);
+    background: rgba(0, 0, 0, 0.4);
     font-size: 2.1rem;
     line-height: 1;
     cursor: pointer;
@@ -695,12 +510,7 @@ const styles = `
     border: 0;
     border-radius: 34px;
     color: #ffffff;
-    background: linear-gradient(
-      100deg,
-      #08b9eb 0%,
-      #168bdd 52%,
-      #7048df 100%
-    );
+    background: #000000;
     font-size: 1.3rem;
     cursor: pointer;
   }
@@ -708,10 +518,8 @@ const styles = `
   .withdraw-modal {
     width: min(390px, calc(100% - 32px));
     padding: 24px;
-    border: 1px solid #1769b0;
     border-radius: 18px;
-    background: #061c39;
-    color: #f4f8ff;
+    background: #ffffff;
   }
 
   .withdraw-header {
@@ -723,13 +531,11 @@ const styles = `
 
   .withdraw-header h2 {
     margin: 0;
-    color: #f4f8ff;
     font-size: 1.1rem;
   }
 
   .withdraw-header button {
     border: 0;
-    color: #ffffff;
     background: transparent;
     font-size: 1.8rem;
     cursor: pointer;
@@ -739,16 +545,10 @@ const styles = `
     width: 100%;
     height: 48px;
     padding: 0 14px;
-    border: 1px solid #205c94;
-    border-radius: 8px;
+    border: 1px solid #dddddd;
     outline: none;
-    color: #ffffff;
-    background: #04172f;
+    background: #f6f7fb;
     font: inherit;
-  }
-
-  .withdraw-modal input::placeholder {
-    color: #7895b5;
   }
 
   .withdraw-modal form > button {
@@ -758,19 +558,14 @@ const styles = `
     border: 0;
     border-radius: 28px;
     color: #ffffff;
-    background: linear-gradient(
-      100deg,
-      #08b9eb 0%,
-      #168bdd 52%,
-      #7048df 100%
-    );
+    background: #000000;
     font: inherit;
     cursor: pointer;
   }
 
   .withdraw-error {
     margin: 8px 0 0;
-    color: #ff7890;
+    color: #d00000;
     font-size: 0.82rem;
   }
 
@@ -779,14 +574,12 @@ const styles = `
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    color: #f4f8ff;
-    background: #03152d;
     font-family: Arial, sans-serif;
   }
 
   @media (max-width: 700px) {
     .dashboard-page {
-      padding-bottom: 110px;
+      padding-bottom: 76px;
     }
 
     .dashboard-header {
@@ -835,7 +628,6 @@ const styles = `
     .dashboard-notice-icon {
       width: 22px;
       height: 22px;
-      padding: 3px;
     }
 
     .dashboard-banner {
@@ -941,8 +733,8 @@ const styles = `
     }
 
     .bottom-navigation {
-      height: 88px;
-      padding: 8px 12px;
+      height: 92px;
+      padding: 28px 16px;
     }
 
     .bottom-item {
@@ -956,12 +748,31 @@ const styles = `
     }
 
     .bottom-item.starting {
-      transform: translateY(-8px);
+      transform: translateY(-24px);
     }
 
     .bottom-item.starting img {
-      width: 62px;
-      height: 62px;
+      width: 76px;
+      height: 76px;
+    }
+
+    .reward-overlay {
+      padding: 12px;
+    }
+
+    .reward-close {
+      top: 8px;
+      right: 8px;
+      width: 36px;
+      height: 36px;
+      font-size: 1.6rem;
+    }
+
+    .reward-cancel {
+      width: calc(100% - 24px);
+      height: 50px;
+      margin: 12px;
+      font-size: 1rem;
     }
   }
 `;
@@ -1480,14 +1291,8 @@ export default function Dashboard() {
                 }}
               >
                 {serviceImages.map((image, index) => (
-                  <div
-                    className="services-slide"
-                    key={`${image}-${index}`}
-                  >
-                    <img
-                      src={image}
-                      alt={`Instrument service ${index + 1}`}
-                    />
+                  <div className="services-slide" key={`${image}-${index}`}>
+                    <img src={image} alt={`Instrument service ${index + 1}`} />
                   </div>
                 ))}
               </div>
@@ -1510,6 +1315,7 @@ export default function Dashboard() {
 
           <section className="dashboard-footer">
             <div className="dashboard-footer-divider" />
+            <img src={logo} alt="Instrument" className="dashboard-footer-icon" />
           </section>
         </main>
 
