@@ -1,4 +1,4 @@
-name: Build and deploy to gh-pages (by git)
+name: Build and Deploy
 
 on:
   push:
@@ -6,64 +6,44 @@ on:
       - main
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository (full history)
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          persist-credentials: true
-
+      - uses: actions/checkout@v4
+      
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: "npm"
-
+          cache: 'npm'
+      
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
-
+        run: npm install
+      
       - name: Build
         run: npm run build
+      
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
 
-      - name: Ensure SPA fallback (copy index.html -> 404.html)
-        run: |
-          if [ -f dist/index.html ]; then
-            cp -f dist/index.html dist/404.html
-            echo "Copied dist/index.html to dist/404.html"
-          else
-            echo "dist/index.html not found" && exit 1
-          fi
-
-      - name: Deploy to gh-pages branch (force)
-        env:
-          GH_REPO: ${{ github.repository }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -e
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          git checkout --progress --force main
-
-          git branch -D gh-pages || true
-          git checkout --orphan gh-pages
-
-          git rm -rf . || true
-
-          cp -a dist/. .
-
-          git add --all
-          if git diff --cached --quiet; then
-            echo "No changes to deploy"
-          else
-            git commit -m "Deploy site to gh-pages (by GitHub Actions) [skip ci]"
-            git push -f "https://${GH_TOKEN}@github.com/${GH_REPO}.git" gh-pages
-          fi
-
-          git checkout -f main
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
