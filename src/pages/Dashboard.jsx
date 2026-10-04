@@ -45,7 +45,7 @@ const styles = `
 
   .dashboard-page {
     min-height: 100vh;
-    padding-bottom: 92px;
+    padding-bottom: 120px;
     overflow-x: hidden;
     background: #ffffff;
     color: #000000;
@@ -62,22 +62,36 @@ const styles = `
     font-family: inherit;
   }
 
+  /* Updated dashboard header */
   .dashboard-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
     display: flex;
     align-items: center;
     justify-content: space-between;
     min-height: clamp(72px, 9vw, 96px);
     padding: clamp(14px, 2vw, 20px) clamp(18px, 4.2vw, 42px);
-    border-bottom: 1px solid #dddddd;
+    border-bottom: 1px solid #e0e0e0;
     background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 
   .dashboard-logo {
+    display: block;
     width: clamp(190px, 31vw, 470px);
     max-width: 52%;
     height: clamp(32px, 5.5vw, 58px);
     object-fit: contain;
     object-position: left center;
+    filter: none;
+    transition: opacity 180ms ease;
+  }
+
+  .dashboard-logo:hover {
+    opacity: 0.88;
   }
 
   .dashboard-header-actions {
@@ -87,15 +101,38 @@ const styles = `
   }
 
   .dashboard-contact {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     min-width: clamp(112px, 14vw, 178px);
     height: clamp(40px, 5vw, 62px);
     padding: 0 clamp(16px, 2vw, 26px);
-    border: 0;
+    border: 1px solid #000000;
     border-radius: 40px;
-    color: #ffffff;
-    background: #000000;
+    color: #000000;
+    background: #ffffff;
     font-size: clamp(0.85rem, 1.65vw, 1.65rem);
+    font-weight: 700;
+    letter-spacing: 0.015em;
     cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition:
+      background 180ms ease,
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      transform 180ms ease;
+  }
+
+  .dashboard-contact:hover {
+    border-color: #000000;
+    background: #f5f5f5;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+  }
+
+  .dashboard-contact:active {
+    transform: translateY(0);
   }
 
   .dashboard-menu {
@@ -114,7 +151,16 @@ const styles = `
     display: block;
     width: 100%;
     height: clamp(2px, 0.35vw, 4px);
+    border-radius: 20px;
     background: #000000;
+    box-shadow: none;
+    transition:
+      opacity 180ms ease,
+      transform 180ms ease;
+  }
+
+  .dashboard-menu:hover span {
+    box-shadow: none;
   }
 
   .dashboard-content {
@@ -122,6 +168,7 @@ const styles = `
     margin: 0 auto;
   }
 
+  /* Updated notice row and icon */
   .dashboard-notice {
     position: relative;
     display: flex;
@@ -129,7 +176,9 @@ const styles = `
     gap: clamp(8px, 1.8vw, 18px);
     min-height: clamp(58px, 8vw, 102px);
     overflow: hidden;
-    border-bottom: 1px solid #dddddd;
+    border-bottom: 1px solid #e0e0e0;
+    color: #333333;
+    background: #f9f9f9;
     font-size: clamp(0.8rem, 1.5vw, 1.5rem);
     white-space: nowrap;
   }
@@ -137,12 +186,16 @@ const styles = `
   .dashboard-notice-icon {
     position: relative;
     z-index: 2;
+    display: block;
+    flex: 0 0 auto;
     width: clamp(22px, 3.2vw, 42px);
     height: clamp(22px, 3.2vw, 42px);
-    flex: 0 0 auto;
+    padding: clamp(3px, 0.55vw, 6px);
     object-fit: contain;
-    display: block;
+    border: 1px solid #d0d0d0;
+    border-radius: 50%;
     background: #ffffff;
+    box-shadow: none;
   }
 
   .dashboard-notice-track {
@@ -167,8 +220,9 @@ const styles = `
     height: clamp(250px, 51.6vw, 516px);
     margin-top: clamp(20px, 3.4vw, 34px);
     overflow: hidden;
+    border: 1px solid #d0d0d0;
     border-radius: clamp(12px, 1.8vw, 18px);
-    background: #edf249;
+    background: #f0f0f0;
   }
 
   .dashboard-banner video {
@@ -180,6 +234,7 @@ const styles = `
 
   .dashboard-intro {
     margin: clamp(22px, 3.4vw, 34px) 0 clamp(18px, 2.8vw, 28px);
+    color: #000000;
     font-size: clamp(1.25rem, 3.2vw, 3rem);
     line-height: 1.32;
     letter-spacing: -0.065em;
@@ -199,6 +254,7 @@ const styles = `
     background: #000000;
     font-size: clamp(0.85rem, 1.3vw, 1.3rem);
     cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   }
 
   .dashboard-black-button .arrow {
@@ -210,11 +266,12 @@ const styles = `
     width: 100%;
     height: clamp(1px, 0.2vw, 2px);
     margin: clamp(24px, 4.2vw, 42px) 0 clamp(20px, 3.4vw, 34px);
-    background: #000000;
+    background: #e0e0e0;
   }
 
   .dashboard-section-title {
     margin: 0 0 clamp(18px, 3.4vw, 34px);
+    color: #000000;
     font-size: clamp(1rem, 1.9vw, 1.9rem);
     font-weight: 400;
     letter-spacing: -0.065em;
@@ -235,12 +292,14 @@ const styles = `
     padding: clamp(20px, 3.8vw, 38px)
       clamp(10px, 2vw, 20px)
       clamp(16px, 2.8vw, 28px);
-    border: 0;
+    border: 1px solid #d0d0d0;
     border-radius: clamp(12px, 2.5vw, 25px);
     color: #000000;
     font-size: clamp(1rem, 2vw, 2rem);
     letter-spacing: -0.06em;
     cursor: pointer;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   }
 
   .quick-link img {
@@ -250,24 +309,33 @@ const styles = `
   }
 
   .quick-link.event {
-    background: #edf8e9;
+    border-color: #d0d0d0;
+    background: #ffffff;
   }
 
-  .quick-link.vip,
+  .quick-link.vip {
+    border-color: #d0d0d0;
+    background: #ffffff;
+  }
+
   .quick-link.faq {
-    background: #beb4ad;
+    border-color: #d0d0d0;
+    background: #ffffff;
   }
 
   .quick-link.terms {
-    background: #f5ff7b;
+    border-color: #d0d0d0;
+    background: #ffffff;
   }
 
   .quick-link.certificate {
-    background: #c9cdf5;
+    border-color: #d0d0d0;
+    background: #ffffff;
   }
 
   .quick-link.about {
-    background: #8d8e9b;
+    border-color: #d0d0d0;
+    background: #ffffff;
   }
 
   .recent-section {
@@ -288,8 +356,9 @@ const styles = `
     width: 100%;
     aspect-ratio: 1.05;
     overflow: hidden;
+    border: 1px solid #d0d0d0;
     border-radius: clamp(12px, 2vw, 20px);
-    background: #dddddd;
+    background: #f0f0f0;
   }
 
   .recent-image img {
@@ -301,13 +370,14 @@ const styles = `
 
   .recent-card h3 {
     margin: clamp(10px, 1.8vw, 18px) 0 clamp(6px, 1vw, 10px);
+    color: #000000;
     font-size: clamp(1rem, 2vw, 2rem);
     font-weight: 400;
     letter-spacing: -0.07em;
   }
 
   .recent-card small {
-    color: #999999;
+    color: #666666;
     font-size: clamp(0.7rem, 1.35vw, 1.35rem);
     letter-spacing: -0.04em;
   }
@@ -317,27 +387,36 @@ const styles = `
     padding: clamp(30px, 6.2vw, 62px)
       clamp(20px, 4.2vw, 42px)
       clamp(70px, 7.4vw, 100px);
-    background: #e5eb45;
+    border: 1px solid #d0d0d0;
+    border-radius: clamp(12px, 2vw, 20px);
+    background: #ffffff;
   }
 
   .services-label {
     display: block;
     margin-bottom: clamp(42px, 9vw, 90px);
+    color: #666666;
     font-size: clamp(0.85rem, 1.15vw, 1.15rem);
   }
 
   .services h2 {
     max-width: 800px;
     margin: 0 0 clamp(40px, 9vw, 90px);
+    color: #000000;
     font-size: clamp(1.8rem, 4.5vw, 4.4rem);
     font-weight: 400;
     line-height: 1.12;
     letter-spacing: -0.07em;
   }
 
+  .services h2::first-line {
+    color: #000000;
+  }
+
   .services p {
     max-width: 950px;
     margin: 0 0 clamp(32px, 6.8vw, 68px);
+    color: #333333;
     font-size: clamp(0.95rem, 2.4vw, 2.25rem);
     line-height: 1.45;
     letter-spacing: -0.06em;
@@ -383,7 +462,7 @@ const styles = `
     padding: 0;
     border: 0;
     border-radius: 50%;
-    background: rgba(0, 0, 0, 0.25);
+    background: #e0e0e0;
     cursor: pointer;
   }
 
@@ -394,15 +473,15 @@ const styles = `
   .dashboard-footer {
     width: 100%;
     min-height: clamp(110px, 18vw, 220px);
-    padding: clamp(24px, 4vw, 42px) 0 clamp(80px, 10vw, 120px);
-    background: #ffffff;
+    padding: clamp(24px, 4vw, 42px) 0 clamp(40px, 5vw, 60px);
+    background: transparent;
   }
 
   .dashboard-footer-divider {
     width: calc(100% - clamp(36px, 8.4vw, 84px));
     height: clamp(1px, 0.2vw, 2px);
     margin: 0 auto;
-    background: #000000;
+    background: #e0e0e0;
   }
 
   .dashboard-footer-icon {
@@ -418,13 +497,14 @@ const styles = `
     right: 0;
     bottom: 0;
     left: 0;
-    z-index: 50;
+    z-index: 9999;
     display: flex;
     align-items: flex-end;
     justify-content: space-around;
-    height: clamp(82px, 11.6vw, 116px);
-    padding: clamp(8px, 1.2vw, 12px) clamp(22px, 3.2vw, 32px);
-    background: #000000;
+    height: clamp(64px, 9.6vw, 90px);
+    padding: clamp(6px, 1.2vw, 10px) clamp(22px, 3.2vw, 32px);
+    border-top: 1px solid #e0e0e0;
+    background: #ffffff;
   }
 
   .bottom-item {
@@ -434,27 +514,44 @@ const styles = `
     justify-content: flex-end;
     min-width: clamp(80px, 15vw, 150px);
     border: 0;
-    color: #ffffff;
+    color: #000000;
     background: transparent;
-    font-size: clamp(0.75rem, 1.3vw, 1.3rem);
+    font-size: clamp(0.78rem, 1.2vw, 1rem);
     cursor: pointer;
+    padding-bottom: 8px;
   }
 
   .bottom-item img {
     width: clamp(30px, 4.3vw, 43px);
     height: clamp(30px, 4.3vw, 43px);
-    margin-bottom: clamp(4px, 0.8vw, 8px);
+    margin-bottom: 6px;
     object-fit: contain;
   }
 
   .bottom-item.starting {
-    transform: translateY(clamp(-30px, -3vw, -24px));
+    transform: translateY(-10px);
+    position: relative;
+    padding-bottom: 6px;
   }
 
   .bottom-item.starting img {
-    width: clamp(76px, 12.4vw, 124px);
-    height: clamp(76px, 12.4vw, 124px);
-    margin-bottom: clamp(-13px, -1.3vw, -8px);
+    width: clamp(72px, 11vw, 104px);
+    height: clamp(72px, 11vw, 104px);
+    margin-bottom: 4px;
+    border-radius: 50%;
+    background: transparent;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 1;
+  }
+
+  .bottom-item span {
+    color: #000000;
+    font-size: clamp(12px, 1.2vw, 14px);
+    font-weight: 700;
+    line-height: 1.1;
+    margin: 0;
+    padding-bottom: 4px;
   }
 
   .reward-overlay,
@@ -466,7 +563,7 @@ const styles = `
     align-items: center;
     justify-content: center;
     padding: 24px;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.5);
   }
 
   .reward-modal {
@@ -474,6 +571,8 @@ const styles = `
     width: min(900px, 100%);
     max-height: calc(100vh - 48px);
     overflow-y: auto;
+    border: 1px solid #d0d0d0;
+    border-radius: 18px;
     background: #ffffff;
   }
 
@@ -493,10 +592,10 @@ const styles = `
     justify-content: center;
     width: 46px;
     height: 46px;
-    border: 2px solid #ffffff;
+    border: 1px solid #d0d0d0;
     border-radius: 50%;
-    color: #ffffff;
-    background: rgba(0, 0, 0, 0.4);
+    color: #000000;
+    background: #ffffff;
     font-size: 2.1rem;
     line-height: 1;
     cursor: pointer;
@@ -518,8 +617,10 @@ const styles = `
   .withdraw-modal {
     width: min(390px, calc(100% - 32px));
     padding: 24px;
+    border: 1px solid #d0d0d0;
     border-radius: 18px;
     background: #ffffff;
+    color: #000000;
   }
 
   .withdraw-header {
@@ -531,11 +632,13 @@ const styles = `
 
   .withdraw-header h2 {
     margin: 0;
+    color: #000000;
     font-size: 1.1rem;
   }
 
   .withdraw-header button {
     border: 0;
+    color: #000000;
     background: transparent;
     font-size: 1.8rem;
     cursor: pointer;
@@ -545,10 +648,16 @@ const styles = `
     width: 100%;
     height: 48px;
     padding: 0 14px;
-    border: 1px solid #dddddd;
+    border: 1px solid #d0d0d0;
+    border-radius: 8px;
     outline: none;
-    background: #f6f7fb;
+    color: #000000;
+    background: #ffffff;
     font: inherit;
+  }
+
+  .withdraw-modal input::placeholder {
+    color: #999999;
   }
 
   .withdraw-modal form > button {
@@ -565,7 +674,7 @@ const styles = `
 
   .withdraw-error {
     margin: 8px 0 0;
-    color: #d00000;
+    color: #d32f2f;
     font-size: 0.82rem;
   }
 
@@ -574,12 +683,14 @@ const styles = `
     align-items: center;
     justify-content: center;
     min-height: 100vh;
+    color: #000000;
+    background: #ffffff;
     font-family: Arial, sans-serif;
   }
 
   @media (max-width: 700px) {
     .dashboard-page {
-      padding-bottom: 76px;
+      padding-bottom: 110px;
     }
 
     .dashboard-header {
@@ -628,6 +739,7 @@ const styles = `
     .dashboard-notice-icon {
       width: 22px;
       height: 22px;
+      padding: 3px;
     }
 
     .dashboard-banner {
@@ -719,7 +831,7 @@ const styles = `
 
     .dashboard-footer {
       min-height: 90px;
-      padding: 20px 0 90px;
+      padding: 20px 0 44px;
     }
 
     .dashboard-footer-divider {
@@ -733,8 +845,8 @@ const styles = `
     }
 
     .bottom-navigation {
-      height: 92px;
-      padding: 28px 16px;
+      height: 88px;
+      padding: 8px 12px;
     }
 
     .bottom-item {
@@ -748,31 +860,12 @@ const styles = `
     }
 
     .bottom-item.starting {
-      transform: translateY(-24px);
+      transform: translateY(-8px);
     }
 
     .bottom-item.starting img {
-      width: 76px;
-      height: 76px;
-    }
-
-    .reward-overlay {
-      padding: 12px;
-    }
-
-    .reward-close {
-      top: 8px;
-      right: 8px;
-      width: 36px;
-      height: 36px;
-      font-size: 1.6rem;
-    }
-
-    .reward-cancel {
-      width: calc(100% - 24px);
-      height: 50px;
-      margin: 12px;
-      font-size: 1rem;
+      width: 62px;
+      height: 62px;
     }
   }
 `;
@@ -1291,8 +1384,14 @@ export default function Dashboard() {
                 }}
               >
                 {serviceImages.map((image, index) => (
-                  <div className="services-slide" key={`${image}-${index}`}>
-                    <img src={image} alt={`Instrument service ${index + 1}`} />
+                  <div
+                    className="services-slide"
+                    key={`${image}-${index}`}
+                  >
+                    <img
+                      src={image}
+                      alt={`Instrument service ${index + 1}`}
+                    />
                   </div>
                 ))}
               </div>
