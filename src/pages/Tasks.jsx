@@ -175,7 +175,7 @@ const Tasks = () => {
         return firstNine;
       }
     } catch (e) {}
-    const base = "/assets/images/products/";
+    const base = "/Dept/assets/images/products/";
     return Array.from({ length: 9 }, (_, i) => `${base}product1(${100 + i}).png`);
   });
 
